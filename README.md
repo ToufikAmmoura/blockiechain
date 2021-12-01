@@ -1,6 +1,11 @@
 # blockiechain
 
-voor nu is het min of meer gekopieerd van een tutorial maar zal er langzaam m'n eigen implementaties aan toevoegen
+basicly a copied tutorial where I'm adding my own additions and implementations
+
+## things to try
+
+ - adding private keys so transactions can only be done by the owner
+ - reward the miner for its mining
 
 ## possible commands
 
