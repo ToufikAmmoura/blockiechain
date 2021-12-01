@@ -20,7 +20,6 @@ class Blockchain(object):
         """
         Add a new node to the list of nodes
         address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
-        return: None
         """
 
         parsed_url = urlparse(address)
@@ -33,7 +32,7 @@ class Blockchain(object):
         return: <bool> True if valid, False if not
         """
 
-        last_block = chain[0]   # vgm is dit de genesis block (first block)
+        last_block = chain[0]   # beginning with the genesis block
         current_index = 1
 
         while current_index < len(chain):
@@ -42,11 +41,12 @@ class Blockchain(object):
             print(f'{block}')
             print("\n-----------\n")
             # Check that the hash of the block is correct
-            if block['previous_hash'] != self.hash(last_block):
+            last_block_hash = self.hash(last_block)
+            if block['previous_hash'] != last_block_hash:
                 return False
 
             # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block['proof'], block['proof']):
+            if not self.valid_proof(last_block['proof'], block['proof'], last_block_hash):
                 return False
 
             last_block = block
@@ -142,25 +142,28 @@ class Blockchain(object):
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
     
-    def proof_of_work(self, last_proof):
+    def proof_of_work(self, last_block):
         """
         Simple proof of Work Algorithm:
          - Find a number p' such that hash(pp') contains 4 leading zeroes 
          - p is the previous proof, and p' is the new proof
-        last_proof: <int>
+        last_proof: <dict> last Block
         return: <int>
         """
 
+        last_proof = last_block['proof']
+        last_hash = self.hash(last_block)
+
         proof = 0
-        while self.valid_proof(last_proof, proof) is False:
+        while self.valid_proof(last_proof, proof, last_hash) is False:
             proof += 1
         
         return proof
     
     @staticmethod
-    def valid_proof(last_proof, proof):
+    def valid_proof(last_proof, proof, last_hash):
         """
-        Validates the Proof: does hash(last_proof, proof) contain 4 leading zeroes?
+        Validates the Proof: does hash(last_proof, proof, last_hash) contain 4 leading zeroes?
         return: <bool>
         """
 
@@ -183,8 +186,7 @@ blockchain = Blockchain()
 def mine():
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
-    last_proof = last_block['proof']
-    proof = blockchain.proof_of_work(last_proof)
+    proof = blockchain.proof_of_work(last_block)
 
     # We must receive a reward for finding the proof.
     # The sender is "0" to signify that this node has mined a new coin.
@@ -219,7 +221,7 @@ def new_transaction():
     # Create a new Transaction
     index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
 
-    response = {'message': f'Transaction will be added to Block [index]'}
+    response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
 
 @app.route('/chain', methods=['GET'])
