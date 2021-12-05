@@ -1,11 +1,15 @@
 # blockiechain
 
-basicly a copied tutorial where I'm adding my own additions and implementations
+simple blockchain with transactions (cryptocurrency)
 
-## things to try
+## blockchain.py
+ - Class Blockchain()
+ - blockchain.new_block()
 
- - adding private keys so transactions can only be done by the owner
- - reward the miner for its mining
+## blockchain.ts
+ - Class Block()
+ - generateRawNextBlock()
+
 
 ## possible commands
 

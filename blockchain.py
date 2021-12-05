@@ -7,15 +7,26 @@ import requests
 from flask import Flask, jsonify, request
 from urllib.parse import urlparse
 
+class Block(object):
+    def __init__(self, index, previous_hash, timestamp, data, proof):
+        self.index = index
+        self.previous_hash = previous_hash
+        self.timestamp = timestamp
+        self.proof = proof
+
+        self.hash = 
+
+        # self.transactions = [] # TODO voor nu laat ik dit weg maar als ik aan transactions ga werken voeg ik het toe
+
 class Blockchain(object):
     def __init__(self):
         self.chain = []
-        self.current_transactions = []
         self.nodes = set()
 
         # create the genesis block
         self.new_block(previous_hash=1, proof=100)
 
+    # TODO verwijder
     def register_node(self, address):
         """
         Add a new node to the list of nodes
@@ -95,16 +106,23 @@ class Blockchain(object):
         return: <dict> New Block
         """
 
+        index = len(self.chain)+1
+        timestamp = time()
+        prev_hash = previous_hash or self.hash(self.chain[-1])
+        block = Block(
+            index=index,
+            hash=
+        )
+
         block = {
             'index': len(self.chain)+1,
             'timestamp': time(),
-            'transactions': self.current_transactions,
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
         }
 
         # Reset the current list of transactions
-        self.current_transactions = []
+        # self.current_transactions = []
                
         self.chain.append(block)
         return block
@@ -167,6 +185,6 @@ class Blockchain(object):
         return: <bool>
         """
 
-        guess = f'{last_proof}{proof}'.encode()
+        guess = f'{last_proof}{proof}{last_hash}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
