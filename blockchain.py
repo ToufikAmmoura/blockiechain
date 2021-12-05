@@ -8,13 +8,17 @@ from flask import Flask, jsonify, request
 from urllib.parse import urlparse
 
 class Block(object):
-    def __init__(self, index, previous_hash, timestamp, data, proof):
+    def __init__(self, index, previous_hash, timestamp, proof):
         self.index = index
         self.previous_hash = previous_hash
         self.timestamp = timestamp
         self.proof = proof
 
-        self.hash = 
+        self.hash = self.calc_hash()
+
+    def calc_hash(self):
+        # hier moet je dus een functie toevoegen die alle juiste onderdelen hasht
+        pass
 
         # self.transactions = [] # TODO voor nu laat ik dit weg maar als ik aan transactions ga werken voeg ik het toe
 
@@ -111,7 +115,9 @@ class Blockchain(object):
         prev_hash = previous_hash or self.hash(self.chain[-1])
         block = Block(
             index=index,
-            hash=
+            timestamp=timestamp,
+            previous_hash=prev_hash,
+            proof=proof
         )
 
         block = {
