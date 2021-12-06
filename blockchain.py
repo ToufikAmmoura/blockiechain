@@ -1,5 +1,4 @@
 import hashlib
-import json
 from time import time
 
 class Block(object):
@@ -16,7 +15,7 @@ class Blockchain(object):
 
         # create the genesis block
         genesis_hash = "0000607e58623c07e2634999e38638e13b76af5b450cd7a295bc60179e6db208"
-        genesis = Block(0, genesis_hash, "", "inthebeninging", 33)
+        genesis = Block(index=0, hash=genesis_hash, previous_hash="", timestamp="inthebeninging", proof=33)
         self.chain.append(genesis)
 
     def generate_new_block(self):
@@ -27,7 +26,6 @@ class Blockchain(object):
 
         block = self.proof_of_work(index, previous_hash, timestamp)
         return block
-
 
     def proof_of_work(self, index, previous_hash, timestamp):
         proof = 0
@@ -43,7 +41,33 @@ class Blockchain(object):
                 )
                 return block
             proof += 1
+
+    def valid_block(self, block,  previous_block):
+        if previous_block.index + 1 != block.index:
+            return False
+        elif previous_block.hash != block.previous_hash:
+            return False
+        else:
+            recalculate_hash = self.calc_hash(block.index, block.previous_hash, block.timestamp, block.proof) 
+            if recalculate_hash != block.hash:
+                return False
+
+    def replace_chain(self, new_chain):
+        if self.valid_chain(new_chain) and len(new_chain) > len(self.chain):
+            self.chain = new_chain
+        else:
+            print("received blockchain invalid")
     
+    @staticmethod
+    def valid_chain(self, chain):
+        for i in range(1, len(chain)):
+            prev_block = chain[i-1]
+            block = chain[i]
+            if not self.valid_block(block, prev_block):
+                return False
+            
+        return True
+
     @staticmethod
     def calc_hash(index, previous_hash, timestamp, proof):
         string = str(index) + previous_hash + str(timestamp) + str(proof)
