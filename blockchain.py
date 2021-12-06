@@ -1,11 +1,6 @@
 import hashlib
 import json
 from time import time
-from uuid import uuid4
-
-import requests
-from flask import Flask, jsonify, request
-from urllib.parse import urlparse
 
 class Block(object):
     def __init__(self, index, previous_hash, timestamp, proof):
@@ -32,15 +27,15 @@ class Blockchain(object):
         # create the genesis block
         self.new_block(previous_hash=1, proof=100)
 
-    # TODO verwijder
-    def register_node(self, address):
-        """
-        Add a new node to the list of nodes
-        address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
-        """
+    # # TODO verwijder
+    # def register_node(self, address):
+    #     """
+    #     Add a new node to the list of nodes
+    #     address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
+    #     """
 
-        parsed_url = urlparse(address)
-        self.nodes.add(parsed_url.netloc)
+    #     parsed_url = urlparse(address)
+    #     self.nodes.add(parsed_url.netloc)
 
     def valid_chain(self, chain):
         """
@@ -71,45 +66,49 @@ class Blockchain(object):
 
         return True
 
-    def resolve_conflicts(self):
-        """
-        This is our Consensus Algorithm, it resolves conflicts
-        by replacing our chain with the longest one in the network.
-        return: <bool> True if our chain was replaced, False if not
-        """
+    # TODO als het goed is moet dit ook weg want dit moet via HTTP of P2P geregeld worden
+    # def resolve_conflicts(self):
+    #     """
+    #     This is our Consensus Algorithm, it resolves conflicts
+    #     by replacing our chain with the longest one in the network.
+    #     return: <bool> True if our chain was replaced, False if not
+    #     """
 
-        neighbours = self.nodes
-        new_chain = None
+    #     neighbours = self.nodes
+    #     new_chain = None
 
-        # We're only looking for chains longer than ours
-        max_length = len(self.chain)
+    #     # We're only looking for chains longer than ours
+    #     max_length = len(self.chain)
 
-        # Grab and verify the chains from all the nodes in our network
-        for node in neighbours:
-            response = requests.get(f'http://{node}/chain')
+    #     # Grab and verify the chains from all the nodes in our network
+    #     for node in neighbours:
+    #         response = requests.get(f'http://{node}/chain')
 
-            if response.status_code == 200:
-                length = response.json()['length']
-                chain = response.json()['chain']
+    #         if response.status_code == 200:
+    #             length = response.json()['length']
+    #             chain = response.json()['chain']
 
-                # Check if the length is longer and the chain is valid
-                if length > max_length and self.valid_chain(chain):
-                    max_length = length
-                    new_chain = chain
+    #             # Check if the length is longer and the chain is valid
+    #             if length > max_length and self.valid_chain(chain):
+    #                 max_length = length
+    #                 new_chain = chain
 
-        # Replace our chain if we discovered a new, valid chain longer than ours
-        if new_chain:
-            self.chain = new_chain
-            return True
+    #     # Replace our chain if we discovered a new, valid chain longer than ours
+    #     if new_chain:
+    #         self.chain = new_chain
+    #         return True
 
-        return False
+    #     return False
 
+    # TODO dit hier is een chille manier om docstrings te doen
     def new_block(self, proof, previous_hash):
-        """
-        Create a new Block in the Blockchain
-        proof: <int> The proof given by the Proof of Work algorithm
-        previous_hash: <str> Hash of previous Block
-        return: <dict> New Block
+        """ Create a new Block in the Blockchain
+        
+        args:
+            proof (int): the proof given by the Proof of Work algorithm
+            previous_hash (str): hash of previous Block
+        returns: 
+        dict: New Block
         """
 
         index = len(self.chain)+1
@@ -122,19 +121,13 @@ class Blockchain(object):
             proof=proof
         )
 
-        block = {
-            'index': len(self.chain)+1,
-            'timestamp': time(),
-            'proof': proof,
-            'previous_hash': previous_hash or self.hash(self.chain[-1]),
-        }
-
         # Reset the current list of transactions
         # self.current_transactions = []
                
         self.chain.append(block)
         return block
 
+    # TODO dit moet waarschijnlijk anders gaan uiteindelijk
     def new_transaction(self, sender, recipient, amount):
         """
         Creates a new transaction tot go into the next mined Block
@@ -156,6 +149,7 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
+    # TODO moet nog nadenken of deze functie dus nodig is
     @staticmethod
     def hash(block):
         """
@@ -196,3 +190,8 @@ class Blockchain(object):
         guess = f'{last_proof}{proof}{last_hash}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
+
+def main():
+    print(3)
+
+main()
