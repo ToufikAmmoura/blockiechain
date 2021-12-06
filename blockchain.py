@@ -17,8 +17,10 @@ class Block(object):
         self.hash = self.calc_hash()
 
     def calc_hash(self):
-        # hier moet je dus een functie toevoegen die alle juiste onderdelen hasht
-        pass
+        string = str(self.index) + self.previous_hash + str(self.timestamp) + str(self.proof)
+        encoded = string.encode()
+        hash = hashlib.sha256(encoded).hexdigest()
+        return hash
 
         # self.transactions = [] # TODO voor nu laat ik dit weg maar als ik aan transactions ga werken voeg ik het toe
 
