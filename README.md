@@ -2,15 +2,6 @@
 
 simple blockchain with transactions (cryptocurrency)
 
-## blockchain.py
- - Class Blockchain()
- - blockchain.new_block()
-
-## blockchain.ts
- - Class Block()
- - generateRawNextBlock()
-
-
 ## possible commands
 
 ### mine a block
@@ -45,4 +36,19 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
 ```
 curl -X GET http://localhost:5000/nodes/resolve
+```
+# development
+
+## the way to write docstrings
+
+```python
+
+ """Create a new Block in the Blockchain
+
+        args:
+            proof (int): the proof given by the Proof of Work algorithm
+            previous_hash (str): hash of previous Block
+        returns: 
+            new Block (Block())
+"""
 ```
