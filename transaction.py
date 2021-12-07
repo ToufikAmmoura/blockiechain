@@ -1,13 +1,18 @@
+import hashlib
+
 class Transaction(object):
-    def __init__(self, id, txIns, txOuts):
+    def __init__(self, txIns, txOuts):
         self.txIns = txIns
         self.txOuts = txOuts
-        self.calcTxId()
+        self.id = self.calcTxId()
 
     def calcTxId(self):
-        # hash de txIns en de txOuts -> dat is de txId
-        self.txId = ""
-        pass    
+        txins_content = "".join([x.txOutId + str(x.txOutIndex) for x in self.txIns])
+        txouts_content = "".join([x.address + str(x.amount) for x in self.txOuts])
+        content = txins_content + txouts_content
+        encoded = content.encode()
+        hash = hashlib.sha256(encoded).hexdigest()
+        return hash    
 
 class TxIn(object):
     def __init__(self, txOutId, txOutIndex):
