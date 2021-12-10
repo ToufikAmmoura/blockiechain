@@ -1,6 +1,7 @@
 import hashlib
 
 class Transaction(object):
+
     def __init__(self, txIns, txOuts):
         self.txIns = txIns
         self.txOuts = txOuts
@@ -12,14 +13,25 @@ class Transaction(object):
         content = txins_content + txouts_content
         encoded = content.encode()
         hash = hashlib.sha256(encoded).hexdigest()
-        return hash    
+        return hash
 
-class TxIn(object):
-    def __init__(self, txOutId, txOutIndex):
+    def validateTransaction(self, allUnspentTxOuts):
+        # check de signatures van alle txIns
+        # check of het geld ook daadwerkelijk aanwezig is
+        pass
+
+class UnspentTxOut(object):
+    def __init__(self, txOutId, txOutIndex, address, amount):
         self.txOutId = txOutId
         self.txOutIndex = txOutIndex
-        # voor nu is de signature even niet nodig
-        # self.signature = signature
+        self.address = address
+        self.amount = amount
+
+class TxIn(object):
+    def __init__(self, txOutId, txOutIndex, signature):
+        self.txOutId = txOutId
+        self.txOutIndex = txOutIndex
+        self.signature = signature
 
 class TxOut(object):
     def __init__(self, address, amount):

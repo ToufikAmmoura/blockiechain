@@ -39,16 +39,4 @@ curl -X GET http://localhost:5000/nodes/resolve
 ```
 # development
 
-## the way to write docstrings
-
-```python
-
- """Create a new Block in the Blockchain
-
-        args:
-            proof (int): the proof given by the Proof of Work algorithm
-            previous_hash (str): hash of previous Block
-        returns: 
-            new Block (Block())
-"""
-```
+should maybe use typehints
