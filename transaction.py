@@ -33,6 +33,9 @@ class UnspentTxOut(object):
         self.txOutIndex = txOutIndex
         self.address = address
         self.amount = amount
+    
+    def __repr__(self):
+        return str(self.__dict__)
 
 class TxIn(object):
     def __init__(self, txOutId, txOutIndex, signature):
@@ -51,3 +54,24 @@ class TxOut(object):
     def __repr__(self):
         return str(self.__dict__)
         
+def update_unspent_txouts(block_transactions, unspent_txouts):
+    new = []
+    for transaction in block_transactions:
+        for index, txout in enumerate(transaction.txOuts):
+            utxout = UnspentTxOut(
+                transaction.id,
+                index,
+                txout.address,
+                txout.amount
+            )
+            new.append(utxout)
+
+        for txin in transaction.txIns:
+            
+    
+
+    for utxout in unspent_txouts:
+        txout_id = 
+
+
+    return unspent_txouts + new
