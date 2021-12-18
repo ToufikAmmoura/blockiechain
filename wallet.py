@@ -22,6 +22,7 @@ def verify_signature(pub_key, something, signature):
     verifier = DSS.new(pub_key, 'fips-186-3')
     try:
         verifier.verify(h, signature)
-        print ("The message is authentic.")
+        return True
     except ValueError:
-        print ("The message is not authentic.")
+        print("wrong signature")
+        return False

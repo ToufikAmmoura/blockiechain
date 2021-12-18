@@ -1,4 +1,5 @@
 import hashlib
+from wallet import *
 from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
@@ -18,10 +19,23 @@ class Transaction(object):
         hash = hashlib.sha256(encoded).hexdigest() # misschien hier SHA256 gebruiken ipv hashlib
         return hash
 
-    def validate_transaction(self, allUnspentTxOuts):
+    def validate_transaction(self, pubkey, allUnspentTxOuts):
+        # check of id nog goed is
+        if not self.id == self.calc_txid():
+            return False
+        
         # check de signatures van alle txIns
-        # check of het geld ook daadwerkelijk aanwezig is
-        pass
+        for txin in self.txIns:
+            if not verify_signature(pubkey, self.id, txin.signature):
+                return False
+
+        # check of de input gelijk is aan de output
+        for txin in self.txIns:
+            tup = (txin.txOutId, txin.txOutIndex)
+            for utxout in allUnspentTxOuts:
+                pass
+        
+        return True
 
     def __repr__(self):
         return str(self.__dict__)
@@ -66,12 +80,19 @@ def update_unspent_txouts(block_transactions, unspent_txouts):
             )
             new.append(utxout)
 
+    used = []
+    for transaction in block_transactions:
         for txin in transaction.txIns:
-            
-    
+            id = txin.txOutId
+            index = txin.txOutIndex
+            used.append((id, index))
 
     for utxout in unspent_txouts:
-        txout_id = 
-
+        id = utxout.txOutId
+        index = utxout.txOutIndex
+        tup = (id, index)
+        if tup in used:
+            unspent_txouts.remove(tup)
+            used.remove(tup)
 
     return unspent_txouts + new
