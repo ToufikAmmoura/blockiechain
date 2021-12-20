@@ -30,12 +30,21 @@ class Transaction(object):
                 return False
 
         # check of de input gelijk is aan de output
-        for txin in self.txIns:
-            tup = (txin.txOutId, txin.txOutIndex)
-            for utxout in allUnspentTxOuts:
-                pass
+        input = 0
+        output = 0
         
-        return True
+        # calculating input
+        for txin in self.txIns:
+            id, index = txin.txOutId, txin.txOutIndex
+            for utxout in allUnspentTxOuts:
+                if id == utxout.txOutId and index == utxout.txOutIndex:
+                    input += utxout.amount
+        
+        # calculating output
+        for txout in self.txOuts:
+            output += txout.amount
+
+        return input == output
 
     def __repr__(self):
         return str(self.__dict__)
