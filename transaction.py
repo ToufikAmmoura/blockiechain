@@ -21,14 +21,14 @@ class Transaction(object):
         hash = hashlib.sha256(encoded).hexdigest() # misschien hier SHA256 gebruiken ipv hashlib
         return hash
 
-    def validate_transaction(self, pubkey, allUnspentTxOuts):
+    def validate_transaction(self, pubkey, unspent_txouts):
         # ID must be right
         if not self.id == self.calc_txid():
             return False
         
         # verify the txin signatures
         for txin in self.txins:
-            if not verify_signature(pubkey, self.id, txin.signature):
+            if not txin.verify_txin(self.id, unspent_txouts):
                 return False
 
         # validating if input is equal to output
@@ -38,7 +38,7 @@ class Transaction(object):
         # calculating input
         for txin in self.txins:
             id, index = txin.txout_id, txin.txout_index
-            for utxout in allUnspentTxOuts:
+            for utxout in unspent_txouts:
                 if id == utxout.txout_id and index == utxout.txout_index:
                     input += utxout.amount
         
@@ -84,7 +84,7 @@ class TxIn(object):
         self.txout_index = txout_index
         self.signature = signature
     
-    def validate_txin(transaction, unspent_txouts):
+    def validate_txin(transaction_id, unspent_txouts):
         pass
 
     def __repr__(self):

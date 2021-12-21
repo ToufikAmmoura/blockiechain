@@ -7,7 +7,10 @@ def make_keypair():
     pubkey = privkey.public_key()
     return privkey, pubkey 
 
-def make_hex_key(key):
+def get_key_from_hex(hex):
+    return ECC.import_key(bytes.fromhex(hex))
+
+def get_hex_from_key(key):
     binary = key.public_key().export_key(format='DER')
     return binary.hex()
 
