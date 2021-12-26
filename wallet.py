@@ -20,8 +20,8 @@ def sign_something(priv_key, something):
     signature = signer.sign(h)
     return signature
 
-def verify_signature(pub_key, something, signature):
-    h = SHA256.new(something)
+def verify_signature(pub_key, data, signature):
+    h = SHA256.new(data)
     verifier = DSS.new(pub_key, 'fips-186-3')
     try:
         verifier.verify(h, signature)
