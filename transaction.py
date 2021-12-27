@@ -87,7 +87,22 @@ class TxIn(object):
         utxo = find_referenced_utxo(self.txout_id, self.txout_index, unspent_txouts)
         address = utxo.address
         pub_key = get_key_from_hex(address)
-        return verify_signature(pub_key, address, self.signature)
+        return verify_signature(pub_key, transaction_id, self.signature)
+
+    def sign(self, transaction_id, priv_key, unspent_txouts):
+        utxo = find_referenced_utxo(self.txout_id, self.txout_index, unspent_txouts)
+        address = utxo.address
+
+        # address moet gelijk zijn aan de pub_key achter deze priv_key
+        pub_key = priv_key.public_key()
+        key_address = get_hex_from_key(pub_key)
+        if key_address != address:
+            print("Error, key does not match referenced address")
+            return
+
+        # als dat zo is sign transaction_id
+        signature = sign_data(priv_key, transaction_id)
+        return signature
 
     def __repr__(self):
         return str(self.__dict__)
