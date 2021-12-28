@@ -173,7 +173,6 @@ def validate_block_transactions(transactions, unspent_txouts, block_index):
     
     return True
 
-
 def get_coinbase_transaction(address, block_index):
     coinbase_in = TxIn(txout_id='', txout_index=block_index, signature='')
     coinbase_out = TxOut(address=address, amount=COINBASE_AMOUNT)

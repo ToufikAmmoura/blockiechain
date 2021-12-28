@@ -1,6 +1,7 @@
 from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
+import os
 
 def make_keypair():
     privkey = ECC.generate(curve='P-256')
@@ -13,6 +14,21 @@ def get_key_from_hex(hex):
 def get_hex_from_key(key):
     binary = key.public_key().export_key(format='DER')
     return binary.hex()
+
+def init_wallet(name):
+    filename = name + '.der'
+    if os.path.exists(filename):
+        return
+    else:
+        f = open(filename, 'wt')
+        privkey, _ = make_keypair()
+        f.write(privkey.export_key(format='DER'))
+        f.close()
+
+def delete_wallet(name):
+    filename = name + '.der'
+    if os.path.exists(filename):
+        os.remove(filename)
 
 def sign_data(priv_key, data):
     signer = DSS.new(priv_key, 'fips-186-3')
