@@ -179,3 +179,9 @@ def get_coinbase_transaction(address, block_index):
     coinbase_out = TxOut(address=address, amount=COINBASE_AMOUNT)
     coinbase_tx = Transaction([coinbase_in], [coinbase_out])
     return coinbase_tx
+
+def process_transactions(transactions, unspent_txouts, block_index):
+    if not validate_block_transactions(transactions, unspent_txouts, block_index):
+        print("Error, invalid block transactions")
+        return None
+    return update_unspent_txouts(transactions, unspent_txouts)
