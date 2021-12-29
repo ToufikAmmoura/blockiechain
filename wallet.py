@@ -1,6 +1,7 @@
 from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
+from transaction import *
 import os
 
 def make_keypair():
@@ -56,11 +57,11 @@ def find_txouts_for_amount(amount, unspent_txouts):
         current_amount += utxo.amount
         included_utxos.append(utxo)
         if current_amount >= amount:
-            leftover = current_amount - amount
-            return (included_utxos, leftover)
+            left_over = current_amount - amount
+            return (included_utxos, left_over)
 
     print("Cannot create transaction from the available unpent transaction outputs")
-    return None # hier misschien beter over nadenken
+    return None, None # hier misschien beter over nadenken
 
 def delete_wallet(name):
     filename = name + '.der'
@@ -82,3 +83,45 @@ def verify_signature(pub_key, data, signature):
     except ValueError:
         print("wrong signature")
         return False
+
+def create_txouts(receiver, my_address, amount, left_over_amount):
+    txout = TxOut(receiver, amount)
+    if left_over_amount == 0:
+        return [txout]
+    else:
+        left_over_txout = TxOut(my_address, left_over_amount)
+        return [txout, left_over_txout]
+
+def filter_tx_pool_txs(unspent_txouts, transaction_pool):
+    unused_utxos = []
+    used = []
+    for transaction in transaction_pool:
+        for txin in transaction.txins:
+            tup = (txin.txout_id, txin.txout_index)
+            used.append(tup)
+    
+    for utxo in unspent_txouts:
+        tup = (utxo.txout_id, utxo.txout_index)
+        if tup not in used:
+            unused_utxos.append(utxo)
+    
+    return unused_utxos
+
+def create_transaction(receiver, amount, priv_key, unspent_txouts, tx_pool):
+    address = priv_key.public_key()
+    my_unspent_txouts = find_unspent_txouts(address, unspent_txouts)
+    my_unspent_txouts = filter_tx_pool_txs(my_unspent_txouts, tx_pool)
+
+    included_utxouts, left_over = find_txouts_for_amount(amount, my_unspent_txouts)
+    unsigned_txins = []
+    for utxo in included_utxouts:
+        txin = TxIn(utxo.txout_id, utxo.txout_index)
+        unsigned_txins.append(txin)
+    
+    txouts = create_txouts(receiver, address, amount, left_over)
+    transaction = Transaction(unsigned_txins, txouts)
+
+    for txin in transaction.txins:
+        txin.sign(transaction.id, priv_key, unspent_txouts)
+    
+    return transaction
