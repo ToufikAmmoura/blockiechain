@@ -19,9 +19,10 @@ def get_hex_from_key(key):
 def init_wallet(name):
     filename = name + '.der'
     if os.path.exists(filename):
+        print('wallet already exists')
         return
     else:
-        f = open(filename, 'wt')
+        f = open(filename, 'wb')
         privkey, _ = make_keypair()
         f.write(privkey.export_key(format='DER'))
         f.close()
@@ -29,7 +30,7 @@ def init_wallet(name):
 def get_key_from_wallet(name):
     filename = name + '.der'
     try:
-        f = open(filename, 'rt')
+        f = open(filename, 'rb')
         key = ECC.import_key(f.read())
         return key
     except FileNotFoundError:
