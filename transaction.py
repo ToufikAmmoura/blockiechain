@@ -167,7 +167,7 @@ def validate_block_transactions(transactions, unspent_txouts, block_index):
         return False
 
     # validate the normal transactions
-    for transaction in transactions[:1]:
+    for transaction in transactions[1:]:
         if not transaction.validate_transaction(unspent_txouts):
             return False
     
