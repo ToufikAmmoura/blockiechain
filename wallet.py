@@ -1,8 +1,7 @@
+import os
 from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
-from transaction import *
-import os
 
 def make_keypair():
     privkey = ECC.generate(curve='P-256')
@@ -86,11 +85,12 @@ def verify_signature(pub_key, data, signature):
         return False
 
 def create_txouts(receiver, my_address, amount, left_over_amount):
-    txout = TxOut(receiver, amount)
+    import transaction
+    txout = transaction.TxOut(receiver, amount)
     if left_over_amount == 0:
         return [txout]
     else:
-        left_over_txout = TxOut(my_address, left_over_amount)
+        left_over_txout = transaction.TxOut(my_address, left_over_amount)
         return [txout, left_over_txout]
 
 def filter_tx_pool_txs(unspent_txouts, transaction_pool):
@@ -109,18 +109,19 @@ def filter_tx_pool_txs(unspent_txouts, transaction_pool):
     return unused_utxos
 
 def create_transaction(receiver, amount, priv_key, unspent_txouts, tx_pool):
-    address = priv_key.public_key()
+    import transaction
+    address = get_hex_from_key(priv_key.public_key())
     my_unspent_txouts = find_unspent_txouts(address, unspent_txouts)
     my_unspent_txouts = filter_tx_pool_txs(my_unspent_txouts, tx_pool)
 
     included_utxouts, left_over = find_txouts_for_amount(amount, my_unspent_txouts)
     unsigned_txins = []
     for utxo in included_utxouts:
-        txin = TxIn(utxo.txout_id, utxo.txout_index)
+        txin = transaction.TxIn(utxo.txout_id, utxo.txout_index, "")
         unsigned_txins.append(txin)
     
     txouts = create_txouts(receiver, address, amount, left_over)
-    transaction = Transaction(unsigned_txins, txouts)
+    transaction = transaction.Transaction(unsigned_txins, txouts)
 
     for txin in transaction.txins:
         txin.sign(transaction.id, priv_key, unspent_txouts)

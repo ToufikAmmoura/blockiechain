@@ -1,8 +1,9 @@
 import hashlib
-from wallet import *
 from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
 from Crypto.Signature import DSS
+
+import wallet
 
 COINBASE_AMOUNT = 50
 
@@ -86,8 +87,8 @@ class TxIn(object):
     def validate_txin(self, transaction_id, unspent_txouts):
         utxo = find_referenced_utxo(self.txout_id, self.txout_index, unspent_txouts)
         address = utxo.address
-        pub_key = get_key_from_hex(address)
-        return verify_signature(pub_key, transaction_id, self.signature)
+        pub_key = wallet.get_key_from_hex(address)
+        return wallet.verify_signature(pub_key, transaction_id, self.signature)
 
     def sign(self, transaction_id, priv_key, unspent_txouts):
         utxo = find_referenced_utxo(self.txout_id, self.txout_index, unspent_txouts)
@@ -95,13 +96,13 @@ class TxIn(object):
 
         # address moet gelijk zijn aan de pub_key achter deze priv_key
         pub_key = priv_key.public_key()
-        key_address = get_hex_from_key(pub_key)
+        key_address = wallet.get_hex_from_key(pub_key)
         if key_address != address:
             print("Error, key does not match referenced address")
             return
 
         # als dat zo is sign transaction_id
-        signature = sign_data(priv_key, transaction_id)
+        signature = wallet.sign_data(priv_key, transaction_id)
         return signature
 
     def __repr__(self):
