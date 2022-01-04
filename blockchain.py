@@ -1,8 +1,7 @@
 import hashlib
 from time import time
-from transaction import Transaction, TxIn, TxOut
 
-class Block(object):
+class Block:
     def __init__(self, index, hash, previous_hash, timestamp, proof, data):
         self.index = index
         self.hash = hash
@@ -14,23 +13,13 @@ class Block(object):
     def __repr__(self) -> str:
         return str(self.__dict__)
 
-class Blockchain(object):
+class Blockchain:
     def __repr__(self):
         return str(self.__dict__)
 
-    def __init__(self):
+    def __init__(self, genesis_block):
         self.chain = []
-
-        # create the genesis transaction
-        genesis_in = TxIn(txout_id="", txout_index=0, signature="")
-        address = "3059301306072a8648ce3d020106082a8648ce3d0301070342000447e45d57be90ac1ad97c5232f7922ade8e63f9931666f1fab5f1bcaac0bdc4b83bf68c72534eb33b68865b5e5465c7ba46094961b578513aed09ed22ab8c03f3"
-        genesis_out = TxOut(address=address, amount=50)
-        genesis_transaction = Transaction(txins=[genesis_in], txouts=[genesis_out])
-
-        # create the genesis block
-        genesis_hash = "0000607e58623c07e2634999e38638e13b76af5b450cd7a295bc60179e6db208"
-        genesis = Block(index=0, hash=genesis_hash, previous_hash="", timestamp="inthebeninging", proof=33, data=[genesis_transaction])
-        self.chain.append(genesis)
+        self.chain.append(genesis_block)
 
     def generate_new_block(self, data):
         last_block = self.last_block
