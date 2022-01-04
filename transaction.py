@@ -88,7 +88,7 @@ class TxIn(object):
         utxo = find_referenced_utxo(self.txout_id, self.txout_index, unspent_txouts)
         address = utxo.address
         pub_key = wallet.get_key_from_hex(address)
-        return wallet.verify_signature(pub_key, transaction_id, self.signature)
+        return wallet.verify_signature(pub_key, transaction_id.encode(), self.signature)
 
     def sign(self, transaction_id, priv_key, unspent_txouts):
         utxo = find_referenced_utxo(self.txout_id, self.txout_index, unspent_txouts)
@@ -98,11 +98,11 @@ class TxIn(object):
         pub_key = priv_key.public_key()
         key_address = wallet.get_hex_from_key(pub_key)
         if key_address != address:
-            print("Error, key does not match referenced address")
+            print("error, key does not match referenced address")
             return
 
         # als dat zo is sign transaction_id
-        signature = wallet.sign_data(priv_key, transaction_id)
+        signature = wallet.sign_data(priv_key, transaction_id.encode())
         return signature
 
     def __repr__(self):
@@ -123,16 +123,6 @@ class TxOut(object):
         
 def update_unspent_txouts(block_transactions, unspent_txouts):
     new = []
-    for transaction in block_transactions:
-        for index, txout in enumerate(transaction.txouts):
-            utxout = UnspentTxOut(
-                transaction.id,
-                index,
-                txout.address,
-                txout.amount
-            )
-            new.append(utxout)
-
     used = []
     for transaction in block_transactions:
         for txin in transaction.txins:
@@ -144,11 +134,21 @@ def update_unspent_txouts(block_transactions, unspent_txouts):
         id = utxout.txout_id
         index = utxout.txout_index
         tup = (id, index)
-        if tup in used:
-            unspent_txouts.remove(tup)
-            used.remove(tup)
+        if tup not in used:
+            new.append(utxout)
+            # used.remove(tup)
 
-    return unspent_txouts + new
+    for transaction in block_transactions:
+        for index, txout in enumerate(transaction.txouts):
+            utxout = UnspentTxOut(
+                transaction.id,
+                index,
+                txout.address,
+                txout.amount
+            )
+            new.append(utxout)
+
+    return new
 
 def validate_block_transactions(transactions, unspent_txouts, block_index):
     # coinbase transaction must be valid
@@ -182,6 +182,6 @@ def get_coinbase_transaction(address, block_index):
 
 def process_transactions(transactions, unspent_txouts, block_index):
     if not validate_block_transactions(transactions, unspent_txouts, block_index):
-        print("Error, invalid block transactions")
+        print("error, invalid block transactions")
         return None
     return update_unspent_txouts(transactions, unspent_txouts)

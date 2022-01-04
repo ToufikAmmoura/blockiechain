@@ -33,7 +33,7 @@ def get_key_from_wallet(name):
         key = ECC.import_key(f.read())
         return key
     except FileNotFoundError:
-        print('Wallet does not exist')
+        print('wallet does not exist')
         return None
 
 def get_balance(address, unspent_txouts):
@@ -60,7 +60,7 @@ def find_txouts_for_amount(amount, unspent_txouts):
             left_over = current_amount - amount
             return (included_utxos, left_over)
 
-    print("Cannot create transaction from the available unpent transaction outputs")
+    print("cannot create transaction from the available unpent transaction outputs")
     return None, None # hier misschien beter over nadenken
 
 def delete_wallet(name):
@@ -115,6 +115,11 @@ def create_transaction(receiver, amount, priv_key, unspent_txouts, tx_pool):
     my_unspent_txouts = filter_tx_pool_txs(my_unspent_txouts, tx_pool)
 
     included_utxouts, left_over = find_txouts_for_amount(amount, my_unspent_txouts)
+
+    if included_utxouts is None:
+        print("not possible to make this transaction")
+        return None
+
     unsigned_txins = []
     for utxo in included_utxouts:
         txin = transaction.TxIn(utxo.txout_id, utxo.txout_index, "")
@@ -124,6 +129,7 @@ def create_transaction(receiver, amount, priv_key, unspent_txouts, tx_pool):
     transaction = transaction.Transaction(unsigned_txins, txouts)
 
     for txin in transaction.txins:
-        txin.sign(transaction.id, priv_key, unspent_txouts)
-    
+        signature = txin.sign(transaction.id, priv_key, unspent_txouts)
+        txin.signature = signature
+
     return transaction
