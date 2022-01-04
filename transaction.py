@@ -1,14 +1,10 @@
-import hashlib
-from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA256
-from Crypto.Signature import DSS
 
 import wallet
 
 COINBASE_AMOUNT = 50
 
-class Transaction(object):
-
+class Transaction:
     def __init__(self, txins, txouts):
         self.txins = txins
         self.txouts = txouts
@@ -19,7 +15,7 @@ class Transaction(object):
         txouts_content = "".join([x.address + str(x.amount) for x in self.txouts])
         content = txins_content + txouts_content
         encoded = content.encode()
-        hash = hashlib.sha256(encoded).hexdigest() # misschien hier SHA256 gebruiken ipv hashlib
+        hash = SHA256.new(encoded).hexdigest()
         return hash
 
     def validate_transaction(self, unspent_txouts):
@@ -68,7 +64,7 @@ class Transaction(object):
     def __repr__(self):
         return str(self.__dict__)
 
-class UnspentTxOut(object):
+class UnspentTxOut:
     def __init__(self, txout_id, txout_index, address, amount):
         self.txout_id = txout_id
         self.txout_index = txout_index
@@ -78,7 +74,7 @@ class UnspentTxOut(object):
     def __repr__(self):
         return str(self.__dict__)
 
-class TxIn(object):
+class TxIn:
     def __init__(self, txout_id, txout_index, signature):
         self.txout_id = txout_id
         self.txout_index = txout_index
@@ -113,7 +109,7 @@ def find_referenced_utxo(id, index, unspent_txouts):
         if utxo.txout_id == id and utxo.txout_index == index:
             return utxo 
 
-class TxOut(object):
+class TxOut:
     def __init__(self, address, amount):
         self.address = address
         self.amount = amount

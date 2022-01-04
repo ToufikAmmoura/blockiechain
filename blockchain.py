@@ -1,4 +1,4 @@
-import hashlib
+from Crypto.Hash import SHA256
 from time import time
 
 class Block:
@@ -76,7 +76,7 @@ class Blockchain:
     def calc_hash(index, previous_hash, timestamp, proof, data):
         string = str(index) + previous_hash + str(timestamp) + str(proof) + str(data)
         encoded = string.encode()
-        hash = hashlib.sha256(encoded).hexdigest()
+        hash = SHA256.new(encoded).hexdigest()
         return hash
 
     @staticmethod

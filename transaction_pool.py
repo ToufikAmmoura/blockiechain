@@ -1,6 +1,6 @@
 from transaction import *
 
-class TransactionPool(object):
+class TransactionPool:
     def __init__(self, transaction_pool):
         self.transaction_pool = transaction_pool
 
