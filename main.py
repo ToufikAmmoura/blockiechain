@@ -1,6 +1,7 @@
 import requests
 import json
 from flask import Flask, jsonify, request
+from werkzeug.wrappers import response
 
 import blockchain
 import transaction
@@ -36,6 +37,21 @@ def full_chain():
     }
     return response, 200
 
+@app.route('/address', methods=['GET'])
+def get_address():
+    response = {
+        'address': node_address
+    }
+    return response, 200
+
+@app.route('/balance', methods=['GET'])
+def get_balance():
+    amount = wallet.get_balance(node_address, unspent_txouts)
+    response = {
+        'amount': amount
+    }
+    return response, 200
+
 @app.route('/lastblock', methods=['GET'])
 def last_block():
     response = {
@@ -67,6 +83,21 @@ def unspent_transactions():
     response = {
         'utxos': to_dict(wallet.find_unspent_txouts(node_address, unspent_txouts)),
         'address': node_address
+    }
+    return response, 200
+
+@app.route('/newTransaction', methods=['POST'])
+def new_transaction():
+    values = request.get_json()
+    
+    required = ['recipient', 'amount']
+    if not all(k in values for k in required):
+        return 'missing values', 400
+    
+    tx = wallet.create_transaction(values['recipient'], values['amount'], priv_key, unspent_txouts, tx_pool)
+
+    response = {
+        'new transaction': to_dict(tx)
     }
     return response, 200
 
