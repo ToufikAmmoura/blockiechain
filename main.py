@@ -22,7 +22,54 @@ commands:
 """
 
 app = Flask(__name__)
-node_identifier = "bobby"
+node_name = 'bobby'
+node_identifier = node_name
+
+def to_dict(obj):
+    return json.loads(json.dumps(obj, default=lambda o: o.__dict__))
+
+@app.route('/chain', methods=['GET'])
+def full_chain():
+    response = {
+        'chain': to_dict(block_chain.chain), 
+        'length': len(block_chain.chain),
+    }
+    return response, 200
+
+@app.route('/lastblock', methods=['GET'])
+def last_block():
+    response = {
+        'block': to_dict(block_chain.last_block)
+    }
+    return response, 200
+
+@app.route('/mine', methods=['GET'])
+def mine_block():
+    coinbase = transaction.get_coinbase_transaction(node_address, len(block_chain.chain))
+    transactions = [coinbase]
+    block = block_chain.generate_new_block(transactions)
+    block_chain.chain.append(block)
+
+    response = {
+        'new block': to_dict(block)
+    }
+    return response, 200
+
+@app.route('/unspentTransactions', methods=['GET'])
+def unspent_transactions():
+    response = {
+        'utxos': to_dict(unspent_txouts)
+    }
+    return response, 200
+
+@app.route('/myUnspentTransactions', methods=['GET'])
+def unspent_transactions():
+    response = {
+        'utxos': to_dict(wallet.find_unspent_txouts(node_address, unspent_txouts)),
+        'address': node_address
+    }
+    return response, 200
+
 
 # create the genesis transaction
 genesis_in = transaction.TxIn(txout_id="", txout_index=0, signature="")
@@ -37,17 +84,19 @@ genesis_block = blockchain.Block(index=0, hash=genesis_hash, previous_hash="", t
 # create the blockchain
 block_chain = blockchain.Blockchain(genesis_block)
 
-def to_dict(obj):
-    return json.loads(json.dumps(obj, default=lambda o: o.__dict__))
+# create the transaction pool
+tx_pool = []
 
-@app.route('/chain', methods=['GET'])
-def full_chain():
-    response = {
-        'chain': to_dict(block_chain.chain), 
-        'length': len(block_chain.chain),
-    }
-    return response, 200
+# create the unspent transactions list
+block_index = 0
+unspent_txouts = transaction.process_transactions(block_chain.chain[block_index].data, [], block_index)
 
+# create the wallet for this node
+node_wallet = 'bobby_wallet'
+wallet.init_wallet(node_wallet)
+priv_key = wallet.get_key_from_wallet(node_wallet)
+pub_key = priv_key.public_key()
+node_address = wallet.get_hex_from_key(pub_key)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -60,20 +109,8 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
 
 
-# # maak de transaction pool aan (voor nu even niks bijzonders)
-# tx_pool = []
-
-# # maak de unspent transactions list
-# unspent_txouts = process_transactions(blockchain.chain[0].data, [], 0)
-
-# # mine een block
-# coinbase = get_coinbase_transaction(tfk_address, len(blockchain.chain))
-# transactions = [coinbase]
-# block = blockchain.generate_new_block(transactions)
-# blockchain.chain.append(block)
-
 # # update de unspent transactions list
-# unspent_txouts = process_transactions(blockchain.chain[1].data, unspent_txouts, 1)
+# unspent_txouts = process_transactions(blockchain.chain[1].data, unspent_txouts, 1)z
 
 # # mine een block
 # coinbase = get_coinbase_transaction(tfk_address, len(blockchain.chain))
