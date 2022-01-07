@@ -1,7 +1,6 @@
 import requests
 import json
 from flask import Flask, jsonify, request
-from werkzeug.wrappers import response
 
 import blockchain
 import transaction
@@ -17,9 +16,8 @@ commands:
  - mine
  - show chain
  - show last block
- - show peers
- - connect peer
  - show address, balance
+ - create transaction
 """
 
 app = Flask(__name__)
@@ -63,6 +61,7 @@ def last_block():
 def mine_block():
     coinbase = transaction.get_coinbase_transaction(node_address, len(block_chain.chain))
     transactions = [coinbase]
+    transactions += tx_pool
     block = block_chain.generate_new_block(transactions)
     block_chain.chain.append(block)
 
@@ -79,14 +78,14 @@ def unspent_transactions():
     return response, 200
 
 @app.route('/myUnspentTransactions', methods=['GET'])
-def unspent_transactions():
+def my_unspent_transactions():
     response = {
         'utxos': to_dict(wallet.find_unspent_txouts(node_address, unspent_txouts)),
         'address': node_address
     }
     return response, 200
 
-@app.route('/newTransaction', methods=['POST'])
+@app.route('/transaction/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
     
@@ -96,10 +95,15 @@ def new_transaction():
     
     tx = wallet.create_transaction(values['recipient'], values['amount'], priv_key, unspent_txouts, tx_pool)
 
-    response = {
-        'new transaction': to_dict(tx)
-    }
-    return response, 200
+    if tx is not None:
+        successfull = tx_pool.add_to_transaction_pool(tx, unspent_txouts)
+        if successfull:
+            response = {
+                'new transaction': to_dict(tx)
+            }
+            return response, 201
+    else:
+        return "created transaction is not valid", 200
 
 
 # create the genesis transaction
@@ -116,7 +120,7 @@ genesis_block = blockchain.Block(index=0, hash=genesis_hash, previous_hash="", t
 block_chain = blockchain.Blockchain(genesis_block)
 
 # create the transaction pool
-tx_pool = []
+tx_pool = transaction_pool.TransactionPool([])
 
 # create the unspent transactions list
 block_index = 0

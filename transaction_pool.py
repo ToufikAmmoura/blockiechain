@@ -7,13 +7,14 @@ class TransactionPool:
     def add_to_transaction_pool(self, transaction, unspent_txouts):
         if not transaction.validate_transaction(unspent_txouts):
             print('trying to add invalid tx to pool')
-            return
+            return False
         
         if not self.is_valid_for_transaction_pool(transaction):
             print('trying to add invalid tx to pool')
-            return
+            return False
 
         self.transaction_pool.append(transaction)
+        return True
 
     def is_valid_for_transaction_pool(self, transaction):
         used_txins = []
