@@ -1,6 +1,7 @@
 import requests
 import json
 from flask import Flask, jsonify, request
+from werkzeug.wrappers import response
 
 import blockchain
 import transaction
@@ -57,19 +58,6 @@ def last_block():
     }
     return response, 200
 
-@app.route('/mine', methods=['GET'])
-def mine_block():
-    coinbase = transaction.get_coinbase_transaction(node_address, len(block_chain.chain))
-    transactions = [coinbase]
-    transactions += tx_pool
-    block = block_chain.generate_new_block(transactions)
-    block_chain.chain.append(block)
-
-    response = {
-        'new block': to_dict(block)
-    }
-    return response, 200
-
 @app.route('/unspentTransactions', methods=['GET'])
 def unspent_transactions():
     response = {
@@ -82,6 +70,26 @@ def my_unspent_transactions():
     response = {
         'utxos': to_dict(wallet.find_unspent_txouts(node_address, unspent_txouts)),
         'address': node_address
+    }
+    return response, 200
+
+@app.route('/transactionpool', methods=['GET'])
+def get_transactionpool():
+    response = {
+        'transaction pool': to_dict(tx_pool.transaction_pool)
+    }
+    return response, 200
+
+@app.route('/mine', methods=['POST'])
+def mine_block():
+    coinbase = transaction.get_coinbase_transaction(node_address, len(block_chain.chain))
+    transactions = [coinbase]
+    transactions += tx_pool
+    block = block_chain.generate_new_block(transactions)
+    block_chain.chain.append(block)
+
+    response = {
+        'new block': to_dict(block)
     }
     return response, 200
 
@@ -104,7 +112,6 @@ def new_transaction():
             return response, 201
     else:
         return "created transaction is not valid", 200
-
 
 # create the genesis transaction
 genesis_in = transaction.TxIn(txout_id="", txout_index=0, signature="")
