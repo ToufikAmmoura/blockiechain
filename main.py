@@ -149,32 +149,3 @@ if __name__ == '__main__':
     port = args.port
 
     app.run(host='0.0.0.0', port=port)
-
-
-# # update de unspent transactions list
-# unspent_txouts = process_transactions(blockchain.chain[1].data, unspent_txouts, 1)z
-
-# # mine een block
-# coinbase = get_coinbase_transaction(tfk_address, len(blockchain.chain))
-# transactions = [coinbase]
-# block = blockchain.generate_new_block(transactions)
-# blockchain.chain.append(block)
-
-# # update de unspent transactions list
-# unspent_txouts = process_transactions(blockchain.chain[2].data, unspent_txouts, 2)
-
-# # maak een transaction
-# my_gift_to_bob = create_transaction(bob_address, 51, tfk_priv_key, unspent_txouts, [])
-
-# if my_gift_to_bob is not None:
-#     # mine een block
-#     coinbase = get_coinbase_transaction(tfk_address, len(blockchain.chain))
-#     transactions = [coinbase, my_gift_to_bob]
-#     block = blockchain.generate_new_block(transactions)
-#     blockchain.chain.append(block)
-
-#     # update de unspent transactions list
-#     unspent_txouts = process_transactions(blockchain.chain[3].data, unspent_txouts, 3)
-
-#     print(get_balance(bob_address, unspent_txouts))
-#     print(get_balance(tfk_address, unspent_txouts))
