@@ -6,6 +6,3 @@ simple blockchain with transactions (cryptocurrency)
 
 todo: explain usage
 
-# development
-
-should maybe use typehints
