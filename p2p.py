@@ -2,6 +2,7 @@ import socket
 import sys
 import threading
 import time
+import traceback
 
 def thread_debug(msg):
     thread = str(threading.currentThread().getName())
@@ -37,43 +38,52 @@ class Peer:
         s.settimeout(2)
         self.__debug(f'Server started: {self.serverhost}, {self.serverport}')
 
-        t = threading.Thread(target=self.)
-
         while not self.shutdown:
             try:
-            self.__debug('Listening for connections...') 
+                self.__debug('Listening for connections...')  
                 client_socket, client_addr = s.accept()
+                client_socket.settimeout(None)
+
+                t = threading.Thread(target = self.__handlepeer, args = [ client_socket ])
+                t.start()
+            except KeyboardInterrupt:
+                print('KeyboardInterrupt: stopping mainloop')
+                self.shutdown = True
             except:
-                
+                traceback.print_exc()
+                continue
+        
+        self.__debug('Main loop exiting')
+        s.close()
 
-def server():
-    serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serv.bind(('0.0.0.0', 8080))
-    serv.listen(5)
-    while True:
-        conn, addr = serv.accept()
-        from_client = b''
-        while True:
-            data = conn.recv(4096)
-            if not data: break
-            from_client += data
-            print(from_client.decode())
-            conn.send("I am SERVER".encode())
-        conn.close()
-        print('client disconnected')
+# def server():
+#     serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     serv.bind(('0.0.0.0', 8080))
+#     serv.listen(5)
+#     while True:
+#         conn, addr = serv.accept()
+#         from_client = b''
+#         while True:
+#             data = conn.recv(4096)
+#             if not data: break
+#             from_client += data
+#             print(from_client.decode())
+#             conn.send("I am SERVER".encode())
+#         conn.close()
+#         print('client disconnected')
     
-def client(message):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('0.0.0.0', 8080))
-    client.send(message.encode())
-    from_server = client.recv(4096)
-    client.close()
-    print(from_server.decode())
+# def client(message):
+#     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     client.connect(('0.0.0.0', 8080))
+#     client.send(message.encode())
+#     from_server = client.recv(4096)
+#     client.close()
+#     print(from_server.decode())
 
-if __name__ == "__main__":
-    task = sys.argv[1]
-    if task == 'client':
-        message = sys.argv[2]
-        client(message)
-    else:
-        server()
+# if __name__ == "__main__":
+#     task = sys.argv[1]
+#     if task == 'client':
+#         message = sys.argv[2]
+#         client(message)
+#     else:
+#         server()
